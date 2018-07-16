@@ -8,6 +8,7 @@ timeframe = ['2018-01', '2018-02','2018-03', '2018-04', '2018-05']
 sql_transaction = []
 connection = sqlite3.connect('Comment_Dataset.db')
 c = connection.cursor()
+cleanup = 1000000
 
 
 def create_table():
@@ -123,3 +124,10 @@ if __name__ == '__main__':
                                 sql_insert_no_parent(comment_id, parent_id, body, subreddit, created_utc, score)
                 if row_counter % 100000 == 0:
                     print('Total Rows Read: {}, Paired Rows {}, Time {}'.format(row_counter, paired_rows, str(datetime.now())))
+                if row_counter % cleanup == 0:
+                    print("Clean up")
+                    sql = "DELETE FROM comment_data WHERE parent IS NULL"
+                    c.execute(sql)
+                    connection.commit()
+                    c.execute("VACUUM")
+                    connection.commit()
